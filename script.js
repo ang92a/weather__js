@@ -7,7 +7,7 @@ function findLocation() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(success, error);
   } else {
-    alert("Ooops. Something went wrong.");
+    errorOps();
   }
 }
 
@@ -53,32 +53,28 @@ function drawCard(obj) {
   // При нажатии на кнопку сменить город
 
   let changeCity = cardWeather.querySelector(".changeCity");
-  let cardTemp = cardWeather.querySelector(".card_temp");
-  let cardCity = cardWeather.querySelector(".card_city");
-  let nameWeather = cardWeather.querySelector(".card_weather");
 
-  changeCity.addEventListener("click", () =>
-    toggleChange(cardTemp, cardCity, nameWeather, changeCity)
-  );
+  changeCity.addEventListener("click", () => toggleChange());
 }
 
 // функция для отрисовки импута и кнопки Find
 
-function toggleChange(a, b, c, d) {
-  a.style.display = "none";
-  b.style.display = "none";
-  c.style.display = "none";
-  d.style.display = "none";
-  cardWeather.innerHTML = `<input class="input" type="text" placeholder="Type your city here" >
-  <button class="find">Find</button>`;
+function toggleChange() {
+  cardWeather.innerHTML = `<form class="form">
+  <input class="input" type="text" placeholder="Type your city here" >
+  <button class="find">Find</button>
+  </form>`;
 
   //Событие для поиска
 
-  let input = cardWeather.querySelector(".input");
-  input.addEventListener("change", () => {
-    let value = input.value;
-    let btnFind = cardWeather.querySelector(".find");
-    btnFind.addEventListener("click", () => toggleFind(value));
+  let form = document.querySelector(".form");
+  let input = document.querySelector(".input");
+  form.addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    if (input.value != "") {
+      let value = input.value;
+      toggleFind(value);
+    }
   });
 }
 
@@ -88,7 +84,7 @@ async function toggleFind(city) {
   let API_ID = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=b582f0a6371524e7a56d1655c5abe090`;
   let resCity = await fetch(API_ID);
   if (!resCity.ok) {
-    alert("Ошибка HTTP");
+    errorOps();
   } else {
     let datCity = await resCity.json();
     let latitude = datCity.coord.lat;
@@ -119,6 +115,16 @@ async function fetchId(url) {
   let API_URL_CITY = `http://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&appid=b582f0a6371524e7a56d1655c5abe090`;
 
   fetchData(API_URL, API_URL_CITY); // Запускаем функцию отрисовки обьекта
+}
+
+function errorOps() {
+  cardWeather.innerHTML = `
+  <p ckass="ooops">Ooops. Something went wrong.</p>
+  <p class="errorInfo">Error info</p>
+  <button class="tryAgain">Try again</button>`;
+
+  let tryAgain = document.querySelector(".tryAgain");
+  tryAgain.addEventListener("click", () => toggleChange());
 }
 
 findLocation();
